@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>How Much Are You Like Genghis Khan?</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Crimson Text', serif;
+            background: #1a0f0a;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow-x: hidden;
+            position: relative;
+        }
+        
+        /* Animated background with fire particles */
+        .bg-animation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+            background: 
+                radial-gradient(ellipse at bottom, #2d1810 0%, #1a0f0a 100%),
+                linear-gradient(to bottom, transparent, rgba(255,100,0,0.1));
+        }
+        
+        .ember {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: #ff6b35;
+            border-radius: 50%;
+            animation: float 10s infinite;
+            opacity: 0.6;
+            box-shadow: 0 0 10px #ff4500;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { transform: translateY(-10vh) rotate(720deg); opacity: 0; }
+        }
+        
+        .container {
+            position: relative;
+            z-index: 10;
+            width: 90%;
+            max-width: 800px;
+            background: rgba(45, 24, 16, 0.95);
+            border: 3px solid #8b4513;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 
+                0 0 50px rgba(139, 69, 19, 0.5),
+                inset 0 0 100px rgba(0,0,0,0.5);
+            backdrop-filter: blur(10px);
+        }
+        
+        h1 {
+            font-family: 'Cinzel', serif;
+            color: #d4af37;
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 3px 3px 6px rgba(0,0,0,0.8);
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #cd853f;
+            font-style: italic;
+            margin-bottom: 30px;
+            font-size: 1.2rem;
+        }
+        
+        .quiz-container {
+            display: none;
+        }
+        
+        .quiz-container.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .question {
+            margin-bottom: 25px;
+            padding: 20px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 10px;
+            border-left: 4px solid #d4af37;
+        }
+        
+        .question-text {
+            color: #f4e4c1;
+            font-size: 1.3rem;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+        
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .option {
+            background: rgba(139, 69, 19, 0.3);
+            border: 2px solid #8b4513;
+            padding: 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: #deb887;
+            font-size: 1.1rem;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .option:hover {
+            background: rgba(212, 175, 55, 0.2);
+            border-color: #d4af37;
+            transform: translateX(10px);
+            box-shadow: 0 5px 15px rgba(212, 175, 55, 0.3);
+        }
+        
+        .option.selected {
+            background: rgba(212, 175, 55, 0.4);
+            border-color: #d4af37;
+            color: #ffd700;
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #8b4513 0%, #d4af37 100%);
+            color: #1a0f0a;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.2rem;
+            font-family: 'Cinzel', serif;
+            font-weight: 700;
+            cursor: pointer;
+            border-radius: 50px;
+            display: block;
+            margin: 30px auto 0;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            box-shadow: 0 5px 20px rgba(212, 175, 55, 0.4);
+        }
+        
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(212, 175, 55, 0.6);
+        }
+        
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        /* Start Screen */
+        .start-screen {
+            text-align: center;
+            padding: 40px;
+        }
+        
+        .khan-portrait {
+            width: 200px;
+            height: 200px;
+            background: radial-gradient(circle, #d4af37 0%, #8b4513 100%);
+            border-radius: 50%;
+            margin: 0 auto 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 100px;
+            border: 5px solid #d4af37;
+            box-shadow: 0 0 30px rgba(212, 175, 55, 0.5);
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        
+        .intro-text {
+            color: #deb887;
+            font-size: 1.2rem;
+            line-height: 1.8;
+            margin-bottom: 30px;
+        }
+        
+        /* Results Screen */
+        .results-screen {
+            display: none;
+            text-align: center;
+            padding: 40px;
+        }
+        
+        .results-screen.active {
+            display: block;
+            animation: fadeIn 0.8s ease;
+        }
+        
+        .percentage-circle {
+            width: 250px;
+            height: 250px;
+            border-radius: 50%;
+            background: conic-gradient(#d4af37 var(--percentage), #2d1810 0);
+            margin: 0 auto 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            box-shadow: 0 0 50px rgba(212, 175, 55, 0.5);
+        }
+        
+        .percentage-inner {
+            width: 200px;
+            height: 200px;
+            background: #1a0f0a;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+        }
+        
+        .percentage-number {
+            font-family: 'Cinzel', serif;
+            font-size: 4rem;
+            color: #d4af37;
+            font-weight: 900;
+        }
+        
+        .percentage-label {
+            color: #cd853f;
+            font-size: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+        
+        .result-title {
+            font-family: 'Cinzel', serif;
+            color: #d4af37;
+            font-size: 2rem;
+            margin-bottom: 20px;
+        }
+        
+        .result-description {
+            color: #deb887;
+            font-size: 1.2rem;
+            line-height: 1.8;
+            margin-bottom: 30px;
+            font-style: italic;
+        }
+        
+        .trait-list {
+            text-align: left;
+            background: rgba(0,0,0,0.3);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+        }
+        
+        .trait-item {
+            color: #cd853f;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(139, 69, 19, 0.3);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .trait-item:last-child {
+            border-bottom: none;
+        }
+        
+        .trait-icon {
+            color: #d4af37;
+            font-size: 1.2rem;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 10px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 5px;
+            margin-top: 30px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #8b4513, #d4af37);
+            transition: width 0.5s ease;
+            border-radius: 5px;
+        }
+        
+        .question-counter {
+            text-align: center;
+            color: #cd853f;
+            margin-bottom: 20px;
+            font-family: 'Cinzel', serif;
+        }
+        
+        /* Confetti animation for high scores */
+        .confetti {
+            position: fixed;
+            width: 10px;
+            height: 10px;
+            background: #d4af37;
+            animation: confetti-fall 3s linear forwards;
+            z-index: 100;
+        }
+        
+        @keyframes confetti-fall {
+            to {
+                transform: translateY(100vh) rotate(360deg);
+                opacity: 0;
+            }
+        }
+        
+        @media (max-width: 600px) {
+            h1 { font-size: 1.8rem; }
+            .container { padding: 20px; }
+            .percentage-circle { width: 200px; height: 200px; }
+            .percentage-inner { width: 160px; height: 160px; }
+            .percentage-number { font-size: 3rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-animation" id="bgAnimation"></div>
+    
+    <div class="container">
+        <!-- Start Screen -->
+        <div class="start-screen active" id="startScreen">
+            <div class="khan-portrait">👑</div>
+            <h1>The Khan Within</h1>
+            <p class="subtitle">Discover Your Inner Mongol Warlord</p>
+            <p class="intro-text">
+                Across the steppes of history, one name echoes with thunder: <strong>Genghis Khan</strong>. 
+                The uniter of tribes, the conqueror of empires, the father of nations. 
+                <br><br>
+                Do you possess the strategic mind, the iron will, and the boundless ambition 
+                that forged the largest contiguous empire in human history?
+                <br><br>
+                <em>Take this test to reveal your Khan percentage.</em>
+            </p>
+            <button class="btn" onclick="startQuiz()">Begin Your Destiny</button>
+        </div>
+
+        <!-- Quiz Screen -->
+        <div class="quiz-container" id="quizContainer">
+            <div class="question-counter" id="questionCounter">Question 1 of 10</div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+            </div>
+            
+            <div id="questionsWrapper">
+                <!-- Questions will be injected here -->
+            </div>
+            
+            <button class="btn" id="nextBtn" onclick="nextQuestion()" disabled>Next Question</button>
+        </div>
+
+        <!-- Results Screen -->
+        <div class="results-screen" id="resultsScreen">
+            <h1>Your Khan Essence</h1>
+            <div class="percentage-circle" id="percentageCircle" style="--percentage: 0%">
+                <div class="percentage-inner">
+                    <div class="percentage-number" id="percentageNumber">0%</div>
+                    <div class="percentage-label">Khan Rating</div>
+                </div>
+            </div>
+            
+            <h2 class="result-title" id="resultTitle">The Peaceful Farmer</h2>
+            <p class="result-description" id="resultDescription">
+                You wouldn't hurt a fly. Genghis Khan would be deeply disappointed.
+            </p>
+            
+            <div class="trait-list" id="traitList">
+                <!-- Traits will be injected here -->
+            </div>
+            
+            <button class="btn" onclick="restartQuiz()">Conquer Again</button>
+        </div>
+    </div>
+
+    <script>
+        // Questions database - each question maps to Khan-like traits
+        const questions = [
+            {
+                question: "A neighboring tribe has better grazing lands. What do you do?",
+                options: [
+                    { text: "Ask politely if we can share the land", value: 0, trait: "diplomacy" },
+                    { text: "Offer to trade horses for grazing rights", value: 20, trait: "trade" },
+                    { text: "Form an alliance through marriage", value: 40, trait: "strategy" },
+                    { text: "Unite all tribes and take it by force", value: 100, trait: "conquest" }
+                ]
+            },
+            {
+                question: "How do you handle betrayal by a close friend?",
+                options: [
+                    { text: "Forgive and forget - life's too short", value: 0, trait: "mercy" },
+                    { text: "Confront them emotionally", value: 10, trait: "emotion" },
+                    { text: "Cut ties and never speak again", value: 40, trait: "discipline" },
+                    { text: "Make an example that history will remember", value: 100, trait: "justice" }
+                ]
+            },
+            {
+                question: "Your army is outnumbered 3 to 1. Strategy?",
+                options: [
+                    { text: "Surrender and negotiate terms", value: 0, trait: "realism" },
+                    { text: "Defensive positions and wait for help", value: 20, trait: "caution" },
+                    { text: "Hit and run tactics", value: 60, trait: "tactics" },
+                    { text: "Psychological warfare + feigned retreat", value: 100, trait: "genius" }
+                ]
+            },
+            {
+                question: "Choose your ideal weekend activity:",
+                options: [
+                    { text: "Netflix and tea", value: 0, trait: "comfort" },
+                    { text: "Hiking with friends", value: 20, trait: "nature" },
+                    { text: "Intense physical training", value: 60, trait: "discipline" },
+                    { text: "Horse archery across open plains", value: 100, trait: "warrior" }
+                ]
+            },
+            {
+                question: "A merchant refuses to trade with you. Response?",
+                options: [
+                    { text: "Find another merchant", value: 10, trait: "flexibility" },
+                    { text: "Offer better prices", value: 30, trait: "negotiation" },
+                    { text: "Protect his trade routes for a fee", value: 70, trait: "protection" },
+                    { text: "Make him the richest man in the empire... or nothing", value: 100, trait: "dominance" }
+                ]
+            },
+            {
+                question: "How do you view cultural diversity?",
+                options: [
+                    { text: "Prefer to stick with my own culture", value: 20, trait: "tradition" },
+                    { text: "Respectful but separate", value: 40, trait: "tolerance" },
+                    { text: "Curious about learning from others", value: 70, trait: "curiosity" },
+                    { text: "Actively integrate useful innovations from all conquered peoples", value: 100, trait: "adaptability" }
+                ]
+            },
+            {
+                question: "Someone insults your family honor. Your move?",
+                options: [
+                    { text: "Ignore them - words don't hurt", value: 0, trait: "stoicism" },
+                    { text: "Verbal comeback", value: 20, trait: "wit" },
+                    { text: "Demand formal apology", value: 50, trait: "pride" },
+                    { text: "The insult dies with the insulter", value: 100, trait: "honor" }
+                ]
+            },
+            {
+                question: "Managing a massive empire requires...",
+                options: [
+                    { text: "Democracy and voting", value: 0, trait: "modernity" },
+                    { text: "Delegate to local governors", value: 40, trait: "decentralization" },
+                    { text: "Strict bureaucracy", value: 60, trait: "order" },
+                    { text: "Meritocracy + mounted postal system + religious freedom", value: 100, trait: "innovation" }
+                ]
+            },
+            {
+                question: "Your stance on loyalty:",
+                options: [
+                    { text: "Everyone is replaceable", value: 10, trait: "pragmatism" },
+                    { text: "Loyalty is earned over time", value: 40, trait: "caution" },
+                    { text: "Reward loyalty generously", value: 70, trait: "generosity" },
+                    { text: "Loyalty is sacred - rewarded with gold, betrayed with destruction", value: 100, trait: "fealty" }
+                ]
+            },
+            {
+                question: "Life philosophy in one word:",
+                options: [
+                    { text: "Peace", value: 0, trait: "harmony" },
+                    { text: "Balance", value: 30, trait: "moderation" },
+                    { text: "Strength", value: 70, trait: "power" },
+                    { text: "Domination", value: 100, trait: "supremacy" }
+                ]
+            }
+        ];
+
+        let currentQuestion = 0;
+        let answers = [];
+        let selectedOption = null;
+
+        // Create floating embers
+        function createEmbers() {
+            const container = document.getElementById('bgAnimation');
+            for (let i = 0; i < 20; i++) {
+                const ember = document.createElement('div');
+                ember.className = 'ember';
+                ember.style.left = Math.random() * 100 + '%';
+                ember.style.animationDelay = Math.random() * 10 + 's';
+                ember.style.animationDuration = (8 + Math.random() * 6) + 's';
+                container.appendChild(ember);
+            }
+        }
+
+        function startQuiz() {
+            document.getElementById('startScreen').classList.remove('active');
+            document.getElementById('quizContainer').classList.add('active');
+            createEmbers();
+            renderQuestion();
+        }
+
+        function renderQuestion() {
+            const wrapper = document.getElementById('questionsWrapper');
+            const q = questions[currentQuestion];
+            
+            let html = `
+                <div class="question">
+                    <div class="question-text">${q.question}</div>
+                    <div class="options">
+            `;
+            
+            q.options.forEach((opt, idx) => {
+                html += `
+                    <div class="option" onclick="selectOption(${idx}, ${opt.value})" data-idx="${idx}">
+                        ${opt.text}
+                    </div>
+                `;
+            });
+            
+            html += `</div></div>`;
+            wrapper.innerHTML = html;
+            
+            document.getElementById('questionCounter').textContent = 
+                `Question ${currentQuestion + 1} of ${questions.length}`;
+            
+            const progress = ((currentQuestion) / questions.length) * 100;
+            document.getElementById('progressFill').style.width = progress + '%';
+            
+            selectedOption = null;
+            document.getElementById('nextBtn').disabled = true;
+            document.getElementById('nextBtn').textContent = 
+                currentQuestion === questions.length - 1 ? "See Your Destiny" : "Next Question";
+        }
+
+        function selectOption(idx, value) {
+            // Remove previous selection
+            document.querySelectorAll('.option').forEach(el => el.classList.remove('selected'));
+            
+            // Add selection to clicked
+            document.querySelector(`[data-idx="${idx}"]`).classList.add('selected');
+            
+            selectedOption = { value: value, index: idx };
+            document.getElementById('nextBtn').disabled = false;
+        }
+
+        function nextQuestion() {
+            if (selectedOption === null) return;
+            
+            answers.push(selectedOption.value);
+            
+            if (currentQuestion < questions.length - 1) {
+                currentQuestion++;
+                renderQuestion();
+            } else {
+                showResults();
+            }
+        }
+
+        function showResults() {
+            document.getElementById('quizContainer').classList.remove('active');
+            document.getElementById('resultsScreen').classList.add('active');
+            
+            // Calculate percentage
+            const total = answers.reduce((a, b) => a + b, 0);
+            const percentage = Math.round(total / questions.length);
+            
+            // Animate percentage
+            animatePercentage(percentage);
+            
+            // Determine title and description
+            let title, desc, traits;
+            
+            if (percentage >= 90) {
+                title = "🏔️ The Great Khan Reborn";
+                desc = "You are the reincarnation of Temüjin himself. The steppes whisper your name. Nations would tremble... if you weren't so busy managing your empire efficiently while promoting religious tolerance.";
+                traits = ["Absolute Strategic Genius", "Iron Discipline", "Visionary Leadership", "Calculated Ruthlessness", "Empire-Building Instinct"];
+            } else if (percentage >= 70) {
+                title = "⚔️ Mongol General";
+                desc = "You would have commanded the Golden Horde. A brilliant tactician with the heart of a warrior. Khan would trust you with the western campaigns.";
+                traits = ["Tactical Brilliance", "Strong Leadership", "Decisive Action", "High Ambition", "Loyalty to the Horde"];
+            } else if (percentage >= 50) {
+                title = "🐎 Steppe Warrior";
+                desc = "A solid fighter and loyal tribe member. You'd ride with the Khan, raid villages, and enjoy the spoils of war. Not empire material, but respected.";
+                traits = ["Combat Ready", "Tribal Loyalty", "Physical Hardiness", "Pragmatic Mind", "Survival Instinct"];
+            } else if (percentage >= 30) {
+                title = "🏺 The Merchant";
+                desc = "You'd thrive in the Silk Road trade networks the Khan protected. Smart enough to profit from the empire without fighting for it.";
+                traits = ["Diplomatic Skills", "Business Acumen", "Cultural Awareness", "Risk Management", "Adaptability"];
+            } else if (percentage >= 10) {
+                title = "🌾 The Peaceful Farmer";
+                desc = "You just want to grow crops and not be murdered. The Khan's armies would pass over your field... probably. You'd pay taxes and live.";
+                traits = ["Conflict Avoidance", "Steady Work Ethic", "Community Focus", "Realistic Expectations", "Long-term Survival"];
+            } else {
+                title = "🕊️ The Monk";
+                desc = "Genghis Khan would be utterly baffled by your existence. You represent everything he conquered. Consider moving to a mountain.";
+                traits = ["Extreme Pacifism", "Spiritual Focus", "Non-materialism", "Universal Compassion", "Zero Conquest Desire"];
+            }
+            
+            document.getElementById('resultTitle').textContent = title;
+            document.getElementById('resultDescription').textContent = desc;
+            
+            // Render traits
+            const traitList = document.getElementById('traitList');
+            traitList.innerHTML = traits.map(trait => 
+                `<div class="trait-item">
+                    <span class="trait-icon">⚡</span>
+                    <span>${trait}</span>
+                </div>`
+            ).join('');
+            
+            // Confetti for high scores
+            if (percentage >= 70) {
+                createConfetti();
+            }
+        }
+
+        function animatePercentage(target) {
+            const circle = document.getElementById('percentageCircle');
+            const number = document.getElementById('percentageNumber');
+            let current = 0;
+            
+            const interval = setInterval(() => {
+                if (current >= target) {
+                    clearInterval(interval);
+                    current = target;
+                }
+                number.textContent = current + '%';
+                circle.style.setProperty('--percentage', current + '%');
+                current++;
+            }, 20);
+        }
+
+        function createConfetti() {
+            for (let i = 0; i < 50; i++) {
+                setTimeout(() => {
+                    const confetti = document.createElement('div');
+                    confetti.className = 'confetti';
+                    confetti.style.left = Math.random() * 100 + '%';
+                    confetti.style.top = '-10px';
+                    confetti.style.background = ['#d4af37', '#ff6b35', '#cd853f'][Math.floor(Math.random() * 3)];
+                    document.body.appendChild(confetti);
+                    setTimeout(() => confetti.remove(), 3000);
+                }, i * 50);
+            }
+        }
+
+        function restartQuiz() {
+            currentQuestion = 0;
+            answers = [];
+            selectedOption = null;
+            
+            document.getElementById('resultsScreen').classList.remove('active');
+            document.getElementById('startScreen').classList.add('active');
+        }
+
+        // Initialize
+        createEmbers();
+    </script>
+</body>
+</html>
